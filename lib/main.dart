@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
 void main() => runApp(MyApp());
 
@@ -20,7 +21,39 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+//      home: MyHomePage(title: 'Flutter Demo Home Page'),
+
+      initialRoute: '/',
+      routes: {
+        '/': (_) => MyHomePage(title: 'Flutter Demo Home Page'),
+        '/test': (_) => new WebviewScaffold(
+          url: "http://demo1.keymobile.com.cn/dashboard",
+          appBar: new AppBar(
+            title: RaisedButton(
+              child: const Text('Home'),
+              onPressed: () {
+                //FlutterWebviewPlugin provide a singleton instance linked to one unique webview,
+                // so you can take control of the webview from anywhere in the app
+                final flutterWebviewPlugin = new FlutterWebviewPlugin();
+                flutterWebviewPlugin.close();
+                // Navigate to the second screen using a named route.
+                Navigator.pushNamed(_, '/');
+              },
+            ),
+
+          ),
+          withZoom: false,
+          withLocalStorage: true,
+          hidden: true,
+          initialChild: Container(
+            color: Colors.white10,
+            child: const Center(
+              child: Text('Waiting...'),
+            ),
+          ),
+        ),
+      },
+
     );
   }
 }
@@ -91,10 +124,14 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            WebView(
-              initialUrl: 'https://baidu.com',
-              javascriptMode: JavascriptMode.unrestricted,
+            RaisedButton(
+              child: const Text('Test...'),
+              onPressed: () {
+                // Navigate to the second screen using a named route.
+                Navigator.pushNamed(context, '/test');
+              },
             ),
+
             Text(
               'You have pushed the button this many times:',
             ),
