@@ -4,7 +4,7 @@ https://stackoverflow.com/questions/45940861/android-8-cleartext-http-traffic-no
 ``android:usesCleartextTraffic="true"``
 
 ### 初次debug会卡在gradle
-重启几次好了，估计是网络慢  
+重启几次好了，估计是网络慢
 
 
 ### Hot reload
