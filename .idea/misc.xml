@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="../../../../../../layout/custom_preview.xml" value="0.3015625" />
+        <entry key="app/src/main/res/layout-large/overlayout.xml" value="0.22716627634660422" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.335" />
+        <entry key="app/src/main/res/layout/floating_layout.xml" value="0.25677083333333334" />
+        <entry key="app/src/main/res/layout/layout_floating_window.xml" value="0.32155797101449274" />
+        <entry key="app/src/main/res/layout/notification_layout.xml" value="0.25677083333333334" />
+        <entry key="app/src/main/res/layout/ol.xml" value="0.11005434782608696" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.27291666666666664" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.27291666666666664" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+  <component name="VisualizationToolProject">
+    <option name="state">
+      <ProjectState>
+        <option name="scale" value="0.32155797101449274" />
+      </ProjectState>
+    </option>
+  </component>
+</project>
