@@ -1,12 +1,10 @@
 package com.example.myapplication
 
-import android.app.ActivityManager
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
-import android.app.Activity
+import androidx.annotation.RequiresApi
 
 
 class MyService : Service() {
@@ -43,9 +41,9 @@ class MyService : Service() {
             val act = (application as MyApp).currentActivity()
             val main = (act as MainActivity)
             if (intent?.action == "set_alpha_0_5") {
-                main?.setFloatWin_(0.5f)
+                main?.setFloatWinImpl(0.5f)
             } else if (intent?.action == "set_alpha_0_8") {
-                main?.setFloatWin_(0.8f)
+                main?.setFloatWinImpl(0.8f)
             }
         }
 

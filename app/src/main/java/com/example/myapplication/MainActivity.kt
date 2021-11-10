@@ -19,10 +19,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 
 class MainActivity : AppCompatActivity() {
+
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+//        window.decorView.windowInsetsController?.hide(WindowInsets.Type.statusBars())
 //        MyService.Main = this
         createMusicNotification()
     }
@@ -64,11 +67,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     var touchDownY = 0f
+
     fun setFloatWin(view: View) {
-        setFloatWin_(.5f)
+        setFloatWinImpl(.5f)
     }
 
-    fun setFloatWin_(opacity: Float) {
+    fun setFloatWinImpl(opacity: Float) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT);
             val intent = Intent();
@@ -96,10 +100,9 @@ class MainActivity : AppCompatActivity() {
         val layoutParams = WindowManager.LayoutParams().apply {
             alpha = opacity
             format = PixelFormat.RGBA_8888
-            flags =
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                        WindowManager.LayoutParams.FLAG_FULLSCREEN
+            flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
             //设置大小 自适应
             width = WindowManager.LayoutParams.MATCH_PARENT
             height = WindowManager.LayoutParams.MATCH_PARENT
@@ -112,7 +115,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        val wm = getSystemService(AppCompatActivity.WINDOW_SERVICE) as WindowManager
         wm.addView(view, layoutParams)
     }
 
@@ -162,8 +165,14 @@ class MainActivity : AppCompatActivity() {
         val it2 = Intent(this, MyService::class.java)
         it2.setAction("set_alpha_0_8")
 //        it.putExtra("hello", "我是一个Service");
-        remoteViews.setOnClickPendingIntent(R.id.button9, PendingIntent.getService(this, 0, it1, 0));
-        remoteViews.setOnClickPendingIntent(R.id.button10, PendingIntent.getService(this, 0, it2, 0));
+        remoteViews.setOnClickPendingIntent(
+            R.id.button9,
+            PendingIntent.getService(this, 0, it1, 0)
+        );
+        remoteViews.setOnClickPendingIntent(
+            R.id.button10,
+            PendingIntent.getService(this, 0, it2, 0)
+        );
 
         builder.setContent(remoteViews);
         val notification = builder.build();
