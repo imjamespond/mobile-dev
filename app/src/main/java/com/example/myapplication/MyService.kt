@@ -42,8 +42,8 @@ class MyService : Service() {
             val main = (act as MainActivity)
             if (intent?.action == "set_alpha_0_5") {
                 main?.setFloatWinImpl(0.5f)
-            } else if (intent?.action == "set_alpha_0_8") {
-                main?.setFloatWinImpl(0.8f)
+            } else if (intent?.action == "set_alpha") {
+                main?.setAlpha(1f)
             }
         }
 

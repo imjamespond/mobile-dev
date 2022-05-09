@@ -25,6 +25,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
 //        window.decorView.windowInsetsController?.hide(WindowInsets.Type.statusBars())
 //        MyService.Main = this
         createMusicNotification()
@@ -59,11 +61,21 @@ class MainActivity : AppCompatActivity() {
 //        }
     }
 
-    fun setBrightness(view: android.view.View?) {
+    fun setBrightness(view: android.view.View) {
 
-        this.window.attributes = this.window.attributes.apply { screenBrightness = 0f }
+        val brightness = window.attributes.screenBrightness
+        window.attributes = window.attributes.apply {
+            screenBrightness = if (brightness > 0f) .0f else .05f
+            alpha = .02f
+        }
         //Brightness().schedule(this)
         Toast.makeText(this.applicationContext, "btn is clicked!", Toast.LENGTH_SHORT).show()
+    }
+
+    fun setAlpha(value: Float) {
+        window.attributes = window.attributes.apply {
+            alpha = value
+        }
     }
 
     var touchDownY = 0f
@@ -117,12 +129,16 @@ class MainActivity : AppCompatActivity() {
 
         val wm = getSystemService(AppCompatActivity.WINDOW_SERVICE) as WindowManager
         wm.addView(view, layoutParams)
+
+        fullscreen()
     }
 
     fun closeWin(view: android.view.View) {
         if (touchDownY < view.height / 3) {
             val wm = getSystemService(WINDOW_SERVICE) as WindowManager
             wm.removeView(view)
+
+            fullscreenOff()
         }
     }
 
@@ -163,7 +179,7 @@ class MainActivity : AppCompatActivity() {
         val it1 = Intent(this, MyService::class.java)
         it1.setAction("set_alpha_0_5")
         val it2 = Intent(this, MyService::class.java)
-        it2.setAction("set_alpha_0_8")
+        it2.setAction("set_alpha")
 //        it.putExtra("hello", "我是一个Service");
         remoteViews.setOnClickPendingIntent(
             R.id.button9,
@@ -179,5 +195,36 @@ class MainActivity : AppCompatActivity() {
         //0x11 为通知id 自定义可
         notificationManager.notify(0x11, notification);
 
+    }
+
+    /*
+    * 全屏
+    * */
+    private fun fullscreen() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            /* 刘海周围显示 */
+            window.attributes.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+            if (window.insetsController != null) {
+                window.insetsController!!.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                window.insetsController!!.systemBarsBehavior =
+                    WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+            window.setDecorFitsSystemWindows(false)
+        } else {
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+        }
+    }
+
+    private fun fullscreenOff() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            /* 刘海周围显示 */
+            window.attributes.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+            if (window.insetsController != null) {
+                window.insetsController!!.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+            }
+            window.setDecorFitsSystemWindows(true)
+        }
     }
 }

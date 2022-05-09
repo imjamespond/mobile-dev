@@ -13,12 +13,13 @@
         android:text="0.5"
         app:layout_constraintStart_toStartOf="parent"
         style="?android:attr/buttonBarButtonStyle" />
+
     <Button
         android:id="@+id/button10"
+        style="?android:attr/buttonBarButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="0.8"
-        app:layout_constraintStart_toStartOf="parent"
-        style="?android:attr/buttonBarButtonStyle" />
+        android:text="resume"
+        app:layout_constraintStart_toStartOf="parent" />
 </LinearLayout>
