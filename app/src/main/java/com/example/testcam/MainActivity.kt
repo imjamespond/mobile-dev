@@ -28,9 +28,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.documentfile.provider.DocumentFile
 import com.example.testcam.databinding.ActivityMainBinding
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -41,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 //        setContentView(R.layout.activity_main)
 //    }
 
+    private lateinit var webView: WebView
     private lateinit var viewBinding: ActivityMainBinding
     private var imageCapture: ImageCapture? = null
 //    private var videoCapture: VideoCapture<Recorder>? = null
@@ -87,9 +86,9 @@ class MainActivity : AppCompatActivity() {
         /*
         * webpage for camerflag
         * */
-        val webView = viewBinding.wvWebview
+        webView = viewBinding.wvWebview
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.loadUrl("https://cn.bing.com");
+        webView.loadUrl("https://www.163.com");
         webView.webViewClient = object : WebViewClient() {
             //设置在webView点击打开的新网页在当前界面显示,而不跳转到新的浏览器中
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
@@ -97,14 +96,16 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
         }
-        viewBinding.to163Button.setOnClickListener {
-            webView.loadUrl("https://www.163.com/")
+        viewBinding.toBingButton.setOnClickListener {
+            webView.loadUrl("https://cn.bing.com/")
             setFloatWinImpl(.9f)
         }
         viewBinding.toSinaButton.setOnClickListener {
             webView.loadUrl("https://www.sina.com.cn/")
         }
 
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
 //    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -161,13 +162,13 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
 
 
-                    if (output.savedUri != null) {
-                         val file = DocumentFile.fromSingleUri(applicationContext, output.savedUri!!)
-                        if (file != null) {
-                            Log.d(TAG, "${file.getName()}, dir:${file.isDirectory}")
-                            file.delete()
-                        }
-                    }
+//                    if (output.savedUri != null) {
+//                         val file = DocumentFile.fromSingleUri(applicationContext, output.savedUri!!)
+//                        if (file != null) {
+//                            Log.d(TAG, "${file.getName()}, dir:${file.isDirectory}")
+//                            file.delete()
+//                        }
+//                    }
                 }
             }
         )
@@ -304,7 +305,6 @@ class MainActivity : AppCompatActivity() {
             false
         })
 
-
         val layoutParams = WindowManager.LayoutParams().apply {
             alpha = opacity
             format = PixelFormat.RGBA_8888
@@ -342,7 +342,7 @@ class MainActivity : AppCompatActivity() {
     /*
     * 全屏
     * */
-    fun fullscreen(){
+    private fun fullscreen(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             /* 刘海周围显示 */
             window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
@@ -355,8 +355,9 @@ class MainActivity : AppCompatActivity() {
         } else {
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
         }
+
     }
-    fun fullscreenOff(){
+    private fun fullscreenOff(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             /* 刘海周围显示 */
             window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
