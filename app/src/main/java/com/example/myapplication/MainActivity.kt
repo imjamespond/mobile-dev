@@ -75,6 +75,7 @@ class MainActivity : AppCompatActivity() {
     fun setAlpha(value: Float) {
         window.attributes = window.attributes.apply {
             alpha = value
+            screenBrightness = .3f
         }
     }
 
