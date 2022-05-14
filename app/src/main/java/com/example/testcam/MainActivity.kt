@@ -4,9 +4,7 @@ package com.example.testcam
 
 import android.Manifest
 import android.app.Activity
-import android.content.ContentValues
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.PixelFormat
 import android.net.Uri
@@ -34,6 +32,21 @@ import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
+    companion object {
+        private const val TAG = "CameraXApp"
+        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS =
+            mutableListOf(
+                Manifest.permission.CAMERA,
+//                Manifest.permission.RECORD_AUDIO
+            ).apply {
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            }.toTypedArray()
+    }
+
 //    override fun onCreate(savedInstanceState: Bundle?) {
 //        super.onCreate(savedInstanceState)
 //        setContentView(R.layout.activity_main)
@@ -47,7 +60,7 @@ class MainActivity : AppCompatActivity() {
 //    private lateinit var cameraExecutor: ExecutorService
 
 
-    private var myReceiver: VolumeReceiver? = null
+    private var volumeReceiver: VolumeReceiver? = null
 
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -59,10 +72,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(viewBinding.root)
 
         // 音量全局接收：
-        val myReceiver = VolumeReceiver()
-        val itFilter = IntentFilter()
-        itFilter.addAction("android.media.VOLUME_CHANGED_ACTION")
-        registerReceiver(myReceiver, itFilter)
+        volumeReceiver = VolumeReceiver()
+        registerReceiver(volumeReceiver, IntentFilter("android.media.VOLUME_CHANGED_ACTION") )
+//        registerReceiver(HomeReceiver(),IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
 
         // 拍照初始,权限申请
         if (allPermissionsGranted()) {
@@ -77,9 +89,7 @@ class MainActivity : AppCompatActivity() {
         viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
 //        viewBinding.videoCaptureButton.setOnClickListener { captureVideo() }
         viewBinding.closeButton.setOnClickListener { exitApp() }
-
 //        cameraExecutor = Executors.newSingleThreadExecutor()
-
 //        enterPictureInPictureMode(PictureInPictureParams.Builder().setActions().build())
 
 
@@ -87,8 +97,8 @@ class MainActivity : AppCompatActivity() {
         * webpage for camerflag
         * */
         webView = viewBinding.wvWebview
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.loadUrl("https://www.163.com");
+        webView.getSettings().setJavaScriptEnabled(true)
+        webView.loadUrl("https://www.sina.com.cn")
         webView.webViewClient = object : WebViewClient() {
             //设置在webView点击打开的新网页在当前界面显示,而不跳转到新的浏览器中
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
@@ -106,16 +116,30 @@ class MainActivity : AppCompatActivity() {
 
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
     }
 
-//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-//        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-//            Log.d(TAG, "KEYCODE_VOLUME_DOWN")
-//        }
-//        return super.onKeyDown(keyCode, event)
-//    }
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Log.d(TAG, "KEYCODE_BACK")
+            webView.goBack()
+            return false
+        } else if (keyCode == KeyEvent.KEYCODE_HOME || keyCode == KeyEvent.KEYCODE_MOVE_HOME) {
+            Log.d(TAG, "KEYCODE_HOME ${keyCode}, ${KeyEvent.KEYCODE_HOME}, ${KeyEvent.KEYCODE_MOVE_HOME}")
+            return false
+        }
+        return super.onKeyDown(keyCode, event)
+    }
 
-
+    inner class HomeReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent != null) {
+                if(intent.action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)){
+                    Log.d(TAG, "ACTION_CLOSE_SYSTEM_DIALOGS")
+                }
+            }
+        }
+    }
     /*
     * 拍照
     * */
@@ -221,23 +245,9 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
 //        cameraExecutor.shutdown()
-        unregisterReceiver(myReceiver);
+        unregisterReceiver(volumeReceiver)
     }
 
-    companion object {
-        private const val TAG = "CameraXApp"
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS =
-            mutableListOf(
-                Manifest.permission.CAMERA,
-//                Manifest.permission.RECORD_AUDIO
-            ).apply {
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                }
-            }.toTypedArray()
-    }
 
 
     private fun exitApp() {
@@ -280,13 +290,13 @@ class MainActivity : AppCompatActivity() {
         this.window.attributes = this.window.attributes.apply { screenBrightness = 0f }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT);
-            val intent = Intent();
-            intent.setAction(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-            intent.setData(Uri.parse("package:" + getPackageName()));
+            Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT).show()
+            val intent = Intent()
+            intent.setAction(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+            intent.setData(Uri.parse("package:" + getPackageName()))
 
-            resultLauncher.launch(intent);
-            return;
+            resultLauncher.launch(intent)
+            return
         }
 
         val view = LayoutInflater.from(this).inflate(R.layout.floating_layout, null)
@@ -318,9 +328,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+            layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
-            layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE;
+            layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE
         }
 
 
