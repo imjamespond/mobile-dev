@@ -72,8 +72,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(viewBinding.root)
 
         // 音量全局接收：
-        volumeReceiver = VolumeReceiver()
-        registerReceiver(volumeReceiver, IntentFilter("android.media.VOLUME_CHANGED_ACTION") )
+//        volumeReceiver = VolumeReceiver()
+//        registerReceiver(volumeReceiver, IntentFilter("android.media.VOLUME_CHANGED_ACTION") )
 //        registerReceiver(HomeReceiver(),IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
 
         // 拍照初始,权限申请
@@ -124,11 +124,25 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "KEYCODE_BACK")
             webView.goBack()
             return false
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            takePhoto()
+            return true
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            return true
         } else if (keyCode == KeyEvent.KEYCODE_HOME || keyCode == KeyEvent.KEYCODE_MOVE_HOME) {
             Log.d(TAG, "KEYCODE_HOME ${keyCode}, ${KeyEvent.KEYCODE_HOME}, ${KeyEvent.KEYCODE_MOVE_HOME}")
             return false
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            return true
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            return true
+        }
+        return super.onKeyUp(keyCode, event)
     }
 
     inner class HomeReceiver : BroadcastReceiver() {
@@ -245,7 +259,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
 //        cameraExecutor.shutdown()
-        unregisterReceiver(volumeReceiver)
+//        unregisterReceiver(volumeReceiver)
     }
 
 
@@ -264,7 +278,7 @@ class MainActivity : AppCompatActivity() {
 
         if (event != null) {
             if (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && event.action == KeyEvent.ACTION_UP) {
-                takePhoto()
+//                takePhoto()
             }
         }
 
@@ -302,8 +316,8 @@ class MainActivity : AppCompatActivity() {
         val view = LayoutInflater.from(this).inflate(R.layout.floating_layout, null)
         view.setOnTouchListener(View.OnTouchListener { v, event ->
             when (event!!.action) {
-                MotionEvent.ACTION_DOWN -> System.out.println("起始位置：(" + event.x.toString() + "," + event.y)
-                MotionEvent.ACTION_MOVE -> System.out.println("实时位置：(" + event.x.toString() + "," + event.y)
+//                MotionEvent.ACTION_DOWN -> System.out.println("起始位置：(" + event.x.toString() + "," + event.y)
+//                MotionEvent.ACTION_MOVE -> System.out.println("实时位置：(" + event.x.toString() + "," + event.y)
                 MotionEvent.ACTION_UP -> {
                     System.out.println("结束位置：(" + event.x.toString() + "," + event.y)
                     touchDownX = event.x
