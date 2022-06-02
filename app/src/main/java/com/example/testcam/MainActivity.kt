@@ -27,6 +27,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.testcam.databinding.ActivityMainBinding
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -175,13 +176,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Create output options object which contains file + metadata
-        val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(
-                contentResolver,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues
-            )
-            .build()
+//        val outputOptions = ImageCapture.OutputFileOptions
+//            .Builder(
+//                contentResolver,
+//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+//                contentValues
+//            )
+//            .build()
+
+
+        val filePath = "${externalCacheDir?.absolutePath}/${name}.jpg"
+        val file = File(filePath)
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
 
         // Set up image capture listener, which is triggered after photo has
         // been taken
