@@ -4,7 +4,10 @@ package com.example.testcam
 
 import android.Manifest
 import android.app.Activity
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.ContentValues
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.PixelFormat
 import android.net.Uri
@@ -28,6 +31,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.testcam.databinding.ActivityMainBinding
 import java.io.File
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -273,8 +279,27 @@ class MainActivity : AppCompatActivity() {
     private fun exitApp() {
         android.os.Process.killProcess(android.os.Process.myPid())
     }
-
-
+    private fun moveData( source: File,  target: File) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val sourceP = source.toPath();
+            val targetP = target.toPath();
+            if (target.exists()) {
+//                copyDir(source, target);
+            } else {
+                try {
+                    Files.move(sourceP, targetP, StandardCopyOption.ATOMIC_MOVE);
+                } catch (e: IOException) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            if (target.exists()) {
+//                copyDir(source, target);
+            } else {
+                source.renameTo(target);
+            }
+        }
+    }
 
     /*
     * 音量键
