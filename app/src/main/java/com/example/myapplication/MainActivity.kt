@@ -125,7 +125,9 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-         hideStatusBar()
+        Helper.hideStatusBar(window)
+
+        Helper.preventBack(this)
 
 
         /* 主界面 */
@@ -143,43 +145,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Request permissions on create, as it's typically needed early.
-        requirePermission()
+        Helper.requirePermission(this, requestPermissionLauncher)
 
         // Initialize WebView (assuming you have a WebView in your layout)
         webView = viewBinding.wvWebview // Replace with your WebView ID if different
-        setupWebView()
+        Helper.setupWebView(webView)
 
-        // Register the volume receiver if it's still needed, with the EXPORTED flag
-        // However, as noted, handling volume keys directly in onKeyDown/onKeyUp is generally preferred.
-        // This is primarily for demonstrating the Android 14 broadcast registration change.
-        volumeReceiver = VolumeReceiver()
-        val intentFilter = IntentFilter("android.media.VOLUME_CHANGED_ACTION")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33 (Android 13) and above
-            // For targetSdkVersion 34 (Android 14), you must specify the export behavior.
-            ContextCompat.registerReceiver(
-                this,
-                volumeReceiver,
-                intentFilter,
-                ContextCompat.RECEIVER_NOT_EXPORTED
-            )
-        } else {
-            registerReceiver(volumeReceiver, intentFilter)
-        }
+        volumeReceiver = Helper.createVolumeReceiver(this)
     }
 
-    private fun setupWebView() {
-        // Configure WebView settings as needed
-        webView.settings.javaScriptEnabled = true
-        webView.webViewClient = object : WebViewClient() {
-            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                if (url != null) {
-                    view?.loadUrl(url)
-                }
-                return true
-            }
-        }
-        webView.loadUrl("https://cn.bing.com") // Load a default URL
-    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -191,28 +165,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun requirePermission() {
-        // 拍照初始,权限申请
-//        if (allPermissionsGranted()) {
-//            // startCamera()
-//        } else {
-//            ActivityCompat.requestPermissions(
-//                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
-//            )
-//        }
-        // Check for camera permission at startup
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            // Permission already granted, proceed with camera initialization
-            // startCamera()
-        } else {
-            // Permission not granted, request it from the user
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -233,6 +185,42 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         }
+    }
+
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Log.d(TAG, "KEYCODE_BACK")
+            if (webView.canGoBack()) { // Check if WebView can go back
+                webView.goBack()
+                return true // Consume the back event
+            } else {
+                // If WebView can't go back, let the system handle it (e.g., exit app)
+                return super.onKeyDown(keyCode, event)
+            }
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            takePhoto()
+            return true // Consume the event to prevent system volume change
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            return true // Consume the event to prevent system volume change
+        } else if (keyCode == KeyEvent.KEYCODE_HOME || keyCode == KeyEvent.KEYCODE_MOVE_HOME) {
+            Log.d(
+                TAG,
+                "KEYCODE_HOME $keyCode, ${KeyEvent.KEYCODE_HOME}, ${KeyEvent.KEYCODE_MOVE_HOME}"
+            )
+            // HOME key is typically handled by the system and cannot be reliably intercepted.
+            // Returning false might allow the system to handle it, but true might prevent it.
+            // For HOME, it's generally best to let the system handle it.
+            return false
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            return true // Consume the key up event as well if you consumed key down
+        }
+        return super.onKeyUp(keyCode, event)
     }
 
 
@@ -279,41 +267,6 @@ class MainActivity : AppCompatActivity() {
             vibratePhone(this, 100L)
 
         }, ContextCompat.getMainExecutor(this))
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            Log.d(TAG, "KEYCODE_BACK")
-            if (webView.canGoBack()) { // Check if WebView can go back
-                webView.goBack()
-                return true // Consume the back event
-            } else {
-                // If WebView can't go back, let the system handle it (e.g., exit app)
-                return super.onKeyDown(keyCode, event)
-            }
-        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            takePhoto()
-            return true // Consume the event to prevent system volume change
-        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            return true // Consume the event to prevent system volume change
-        } else if (keyCode == KeyEvent.KEYCODE_HOME || keyCode == KeyEvent.KEYCODE_MOVE_HOME) {
-            Log.d(
-                TAG,
-                "KEYCODE_HOME $keyCode, ${KeyEvent.KEYCODE_HOME}, ${KeyEvent.KEYCODE_MOVE_HOME}"
-            )
-            // HOME key is typically handled by the system and cannot be reliably intercepted.
-            // Returning false might allow the system to handle it, but true might prevent it.
-            // For HOME, it's generally best to let the system handle it.
-            return false
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
-    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            return true // Consume the key up event as well if you consumed key down
-        }
-        return super.onKeyUp(keyCode, event)
     }
 
     //拍照
@@ -373,56 +326,6 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    /*
-     * 全屏
-     * */
-    private fun hideStatusBar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-
-            // 1. 设置全屏模式
-            // 因为 targetSdk >= 35，setDecorFitsSystemWindows(false) 已经默认生效，
-            // 应用内容会自动绘制在系统栏后面。
-            // 你只需要处理隐藏系统栏即可。
-            window.insetsController?.let {
-                // 隐藏状态栏和导航栏
-                it.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-
-                // 设置隐藏后的行为：通过边缘滑动短暂显示系统栏
-                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-
-            // 2. 处理刘海屏
-            // 对于 targetSdk >= 35 的应用，刘海屏区域的渲染也是默认行为，
-            // 即 LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS。
-            // 因此，这行代码在大多数情况下也是非必需的。
-            // 如果你想确保兼容性，可以保留，但它已经是默认值。
-            window.attributes.layoutInDisplayCutoutMode =
-                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
-
-            // 3. 处理内容内边距
-            // 因为你调用了 setDecorFitsSystemWindows(false) (或系统自动调用了它)，
-            // 你的内容 View 会被扩展到整个屏幕。
-            // 你需要为你的 UI 元素手动添加内边距，以避免它们被系统栏覆盖。
-            // 你可以通过监听 WindowInsets 来动态获取内边距并应用。
-            // 例如，使用 ViewCompat.setOnApplyWindowInsetsListener
-            // 或在 Jetpack Compose 中使用 Modifier.windowInsetsPadding
-        } else {
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
-        }
-
-    }
-
-    private fun fullscreenOff() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            /* 刘海周围显示 */
-            window.attributes.layoutInDisplayCutoutMode =
-                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
-            if (window.insetsController != null) {
-                window.insetsController!!.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
-            }
-            window.setDecorFitsSystemWindows(true)
-        }
-    }
 
     private fun exitApp() {
         finishAndRemoveTask() // More graceful way to exit activity and remove from recent tasks
@@ -453,11 +356,15 @@ class MainActivity : AppCompatActivity() {
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         Log.d("dispatchKeyEvent", event.toString())
 
-        if (event != null) {
-            if (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && event.action == KeyEvent.ACTION_UP) {
-                vibratePhone(this, 100L)
-                takePhoto()
-            }
+        if (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && event.action == KeyEvent.ACTION_UP) {
+            vibratePhone(this, 100L)
+            takePhoto()
+        }
+
+        if (event.keyCode == KeyEvent.KEYCODE_BACK) {
+            // true 表示消费事件
+            Log.d("BackHandler", "Back key disabled")
+            return true
         }
 
         return super.dispatchKeyEvent(event)
@@ -492,7 +399,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-         val view = LayoutInflater.from(this).inflate(R.layout.floating_layout, null)
+        val view = LayoutInflater.from(this).inflate(R.layout.floating_layout, null)
         // Create the floating view, need to bind closeWin manually
         //        val view = FrameLayout(this).apply {
         //            setBackgroundColor(0x80000000.toInt()) // Semi-transparent black background
@@ -556,7 +463,7 @@ class MainActivity : AppCompatActivity() {
             val wm = getSystemService(WINDOW_SERVICE) as WindowManager
             wm.removeView(view)
 
-            // fullscreenOff()
+            // Helper.fullscreenOff()
             exitApp()
         }
     }
