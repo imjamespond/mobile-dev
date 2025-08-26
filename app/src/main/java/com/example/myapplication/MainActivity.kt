@@ -127,7 +127,8 @@ class MainActivity : AppCompatActivity() {
 
         Helper.hideStatusBar(window)
 
-        Helper.preventBack(this)
+        // Helper.preventBack(this)
+        Helper.preventScreenOff(window)
 
 
         /* 主界面 */
@@ -264,7 +265,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             // viewBinding.imageCaptureButton.text = "Ready!" // Use .text instead of setText()
-            vibratePhone(this, 100L)
+            Helper.vibratePhone(this, 100L)
 
         }, ContextCompat.getMainExecutor(this))
     }
@@ -357,7 +358,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("dispatchKeyEvent", event.toString())
 
         if (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && event.action == KeyEvent.ACTION_UP) {
-            vibratePhone(this, 100L)
+            Helper.vibratePhone(this, 100L)
             takePhoto()
         }
 
@@ -468,38 +469,5 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Vibrates the phone for a specified duration using the recommended APIs for each Android version.
-     * @param context The context to retrieve the Vibrator service from.
-     * @param durationMillis The duration of the vibration in milliseconds.
-     */
-    private fun vibratePhone(context: Context, durationMillis: Long) {
-        // Get the Vibrator service using the recommended approach for the current SDK level.
-        val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Use VibratorManager for API 31+
-            val vibratorManager =
-                context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vibratorManager.defaultVibrator
-        } else {
-            // Use the old method for API < 31
-            @Suppress("DEPRECATION")
-            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        }
 
-        // Check if the device has a vibrator
-        if (vibrator != null && vibrator.hasVibrator()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // For API 26 and above, use VibrationEffect
-                val vibrationEffect = VibrationEffect.createOneShot(
-                    durationMillis,
-                    VibrationEffect.DEFAULT_AMPLITUDE
-                )
-                vibrator.vibrate(vibrationEffect)
-            } else {
-                // For older APIs (< 26), use the deprecated vibrate method
-                @Suppress("DEPRECATION")
-                vibrator.vibrate(durationMillis)
-            }
-        }
-    }
 }

@@ -1,9 +1,13 @@
 package com.example.myapplication
 
 import android.Manifest
+import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.Log
 import android.view.View
 import android.view.Window
@@ -59,7 +63,7 @@ class Helper {
             return volumeReceiver
         }
 
-        fun preventBack(ma: MainActivity) {
+        /*fun preventBack(ma: MainActivity) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 ma.onBackInvokedDispatcher.registerOnBackInvokedCallback(
                     OnBackInvokedDispatcher.PRIORITY_DEFAULT
@@ -68,20 +72,20 @@ class Helper {
                     Log.d("BackHandler", "Back gesture intercepted")
                 }
             }
-        }
+        }*/
 
         fun requirePermission(
             ma: MainActivity,
             requestPermissionLauncher: ActivityResultLauncher<String>
         ) {
             // 拍照初始,权限申请
-//        if (allPermissionsGranted()) {
-//            // startCamera()
-//        } else {
-//            ActivityCompat.requestPermissions(
-//                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
-//            )
-//        }
+            /*if (allPermissionsGranted()) {
+                // startCamera()
+            } else {
+                ActivityCompat.requestPermissions(
+                    this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+                )
+            }*/
             // Check for camera permission at startup
             if (ContextCompat.checkSelfPermission(
                     ma,
@@ -147,6 +151,46 @@ class Helper {
                 }
                 window.setDecorFitsSystemWindows(true)
             }
+        }
+
+        /**
+         * Vibrates the phone for a specified duration using the recommended APIs for each Android version.
+         * @param context The context to retrieve the Vibrator service from.
+         * @param durationMillis The duration of the vibration in milliseconds.
+         */
+        fun vibratePhone(context: Context, durationMillis: Long) {
+            // Get the Vibrator service using the recommended approach for the current SDK level.
+            val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // Use VibratorManager for API 31+
+                val vibratorManager =
+                    context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+                vibratorManager.defaultVibrator
+            } else {
+                // Use the old method for API < 31
+                @Suppress("DEPRECATION")
+                context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            }
+
+            // Check if the device has a vibrator
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    // For API 26 and above, use VibrationEffect
+                    val vibrationEffect = VibrationEffect.createOneShot(
+                        durationMillis,
+                        VibrationEffect.DEFAULT_AMPLITUDE
+                    )
+                    vibrator.vibrate(vibrationEffect)
+                } else {
+                    // For older APIs (< 26), use the deprecated vibrate method
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(durationMillis)
+                }
+            }
+        }
+
+        fun preventScreenOff(window: Window) {
+            // 设置常亮
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
     }
